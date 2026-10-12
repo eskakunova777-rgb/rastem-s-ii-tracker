@@ -1,0 +1,29 @@
+services:
+  tracker:
+    build: .
+    container_name: tracker
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATA_DIR: /data
+      BACKUP_DIR: /backups
+    volumes:
+      - tracker-data:/data
+      - ./backups:/backups
+    networks:
+      - freelance-backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=freelance-backend"
+      - "traefik.http.routers.tracker-https.entrypoints=websecure"
+      - "traefik.http.routers.tracker-https.rule=Host(`tracker.evskakunova-ai.ru`)"
+      - "traefik.http.routers.tracker-https.tls=true"
+      - "traefik.http.routers.tracker-https.tls.certresolver=letsencrypt"
+      - "traefik.http.services.tracker.loadbalancer.server.port=3000"
+
+volumes:
+  tracker-data:
+
+networks:
+  freelance-backend:
+    external: true

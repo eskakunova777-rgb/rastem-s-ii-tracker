@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Растем с ИИ · Задачи</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<section id="login-view" hidden>
+  <form id="login-form" class="login-box">
+    <img src="/logo.png" alt="Евгения Скакунова" class="login-logo" width="144" height="84">
+    <span class="label">Растем с ИИ · Задачи</span>
+    <h1>Вход в трекер</h1>
+    <label>Логин <input name="login" autocomplete="username" required></label>
+    <label>Пароль <input name="password" type="password" autocomplete="current-password" required></label>
+    <button type="submit" class="primary">Войти</button>
+    <p id="login-error" class="error"></p>
+  </form>
+</section>
+
+<section id="app-view" hidden>
+  <header class="topbar">
+    <a href="/" class="brand"><img src="/logo.png" alt="" width="68" height="40"><span>Евгения Скакунова</span></a>
+    <span class="label brand-label">Растем с ИИ · Задачи</span>
+    <nav class="tabs">
+      <button data-view="board" class="on">Доска</button>
+      <button data-view="mine">Мои задачи</button>
+      <button data-view="summary">Сводка</button>
+      <button data-view="settings" data-admin>Настройки</button>
+      <button data-view="profile">Профиль</button>
+    </nav>
+    <span id="review-badge" class="badge" hidden></span>
+    <span id="me"></span>
+    <button id="new-task" class="primary">+ Задача</button>
+    <button id="logout">Выйти</button>
+  </header>
+
+  <main>
+    <section id="view-board" class="view">
+      <div class="filters">
+        <select id="f-category"></select>
+        <select id="f-assignee"></select>
+        <label class="check"><input type="checkbox" id="f-overdue"> только просроченные</label>
+      </div>
+      <div id="status-tabs" class="status-tabs"></div>
+      <div id="board" class="board"></div>
+    </section>
+
+    <section id="view-mine" class="view" hidden>
+      <h2>Мои задачи</h2>
+      <div id="mine"></div>
+    </section>
+
+    <section id="view-summary" class="view" hidden>
+      <h2>Сводка</h2>
+      <div id="summary"></div>
+    </section>
+
+    <section id="view-settings" class="view" hidden>
+      <h2>Пользователи</h2>
+      <table id="users-table" class="table"></table>
+      <form id="user-form" class="inline-form">
+        <input name="login" placeholder="логин" required>
+        <input name="name" placeholder="имя" required>
+        <select name="role"><option value="assistant">ассистент</option><option value="admin">владелец</option></select>
+        <input name="password" type="password" placeholder="пароль (от 8 символов)" required minlength="8">
+        <button class="primary">Добавить</button>
+      </form>
+      <p id="api-key-box" class="notice" hidden></p>
+
+      <h2>Категории</h2>
+      <ul id="categories-list" class="plain"></ul>
+      <form id="category-form" class="inline-form">
+        <input name="name" placeholder="новая категория" required>
+        <button class="primary">Добавить</button>
+      </form>
+
+      <h2>Данные</h2>
+      <p>Занято файлами: <strong id="storage"></strong>. <a href="/api/export.csv">Выгрузить задачи в CSV</a></p>
+    </section>
+
+    <section id="view-profile" class="view" hidden>
+      <h2>Профиль</h2>
+      <form id="profile-form" class="stack">
+        <label>Имя <input name="name" required></label>
+        <button class="primary">Сохранить имя</button>
+      </form>
+      <h2>Смена пароля</h2>
+      <form id="password-form" class="stack">
+        <label>Старый пароль <input name="old_password" type="password" required autocomplete="current-password"></label>
+        <label>Новый пароль <input name="new_password" type="password" required minlength="8" autocomplete="new-password"></label>
+        <button class="primary">Сменить пароль</button>
+      </form>
+      <p id="profile-msg" class="notice" hidden></p>
+    </section>
+  </main>
+</section>
+
+<dialog id="task-dialog">
+  <form id="task-form">
+    <h2 id="task-dialog-title">Задача</h2>
+    <p id="overdue-note" class="error" hidden>Задача просрочена. Укажите причину просрочки.</p>
+    <label>Название <input name="title" required></label>
+    <label>Описание <textarea name="description" rows="3"></textarea></label>
+    <div class="row">
+      <label>Категория <select name="category_id"></select></label>
+      <label>Исполнитель <select name="assignee_id"></select></label>
+    </div>
+    <div class="row">
+      <label>Срок <input name="due_date" type="date"></label>
+      <label>Приоритет
+        <select name="priority">
+          <option value="low">низкий</option>
+          <option value="medium">средний</option>
+          <option value="high">высокий</option>
+        </select>
+      </label>
+      <label>Статус <select name="status"></select></label>
+    </div>
+    <div id="overdue-block" class="row" hidden>
+      <label>Причина просрочки <select name="overdue_reason"></select></label>
+      <label>Комментарий к просрочке <input name="overdue_comment"></label>
+    </div>
+    <fieldset id="result-block">
+      <legend>Результат</legend>
+      <label>Ссылка <input name="result_url" type="url" placeholder="https://"></label>
+      <div id="result-file-line"></div>
+      <label id="file-label">Файл (до 20 МБ) <input id="result-file" type="file"></label>
+    </fieldset>
+    <label id="change-comment-label">Комментарий к изменению <input name="comment" placeholder="обязателен, если возвращаешь задачу в работу"></label>
+    <p id="task-error" class="error"></p>
+    <div class="actions">
+      <button type="button" id="task-accept" class="primary">Принять</button>
+      <button type="button" id="task-reject">Отклонить</button>
+      <button type="button" id="task-repeat">Повторить через неделю</button>
+      <button type="button" id="task-delete">Удалить</button>
+      <span class="spacer"></span>
+      <button type="button" id="task-cancel">Закрыть</button>
+      <button type="submit" id="task-save" class="primary">Сохранить</button>
+    </div>
+    <div id="history-block" hidden>
+      <h3>История и комментарии</h3>
+      <ul id="history"></ul>
+      <div class="row">
+        <input id="comment-text" placeholder="Комментарий">
+        <button type="button" id="comment-send">Отправить</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<script src="/app.js"></script>
+</body>
+</html>

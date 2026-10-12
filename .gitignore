@@ -1,0 +1,12 @@
+node_modules/
+data/
+.env*
+!.env.example
+.claude/
+backups/
+# внутренние документы, в репозиторий не идут
+БРИФ_трекер.md
+ИНСТРУКЦИЯ_для_агентов.md
+ИНТЕГРАЦИЯ_трекера.md
+tracker
+info/seed-tasks.json
